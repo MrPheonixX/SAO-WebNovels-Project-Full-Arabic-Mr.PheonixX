@@ -1,0 +1,142 @@
+{
+  "name": "Sword Art Online & SAO Progressive – Full Arabic Edition",
+  "short_name": "SAO Arabic Reader",
+  "description": "قراءة مجانية لجميع مجلدات سورد آرت أونلاين مترجمة للعربية - MrPheonixX Team",
+  "lang": "ar",
+  "dir": "rtl",
+  "theme_color": "#3b82f6",
+  "background_color": "#1e293b",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "./",
+  "start_url": "./",
+  "id": "sao-arabic-reader",
+  "categories": [
+    "books",
+    "entertainment",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "icons/android-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "مكتبة ساو الأساسية",
+      "short_name": "ساو",
+      "description": "الوصول السريع لمكتبة SAO الأساسية",
+      "url": "sao",
+      "icons": [
+        {
+          "src": "icons/android-icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ساو بروجريسف",
+      "short_name": "بروجريسف",
+      "description": "الوصول السريع لمكتبة SAO Progressive",
+      "url": "progressive",
+      "icons": [
+        {
+          "src": "icons/android-icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "الأعمال الإضافية",
+      "short_name": "إضافية",
+      "description": "الوصول السريع للأعمال الإضافية",
+      "url": "sideworks",
+      "icons": [
+        {
+          "src": "icons/android-icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "الملف الشخصي",
+      "short_name": "ملفي",
+      "description": "عرض الملف الشخصي وتقدم القراءة",
+      "url": "profile",
+      "icons": [
+        {
+          "src": "icons/android-icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/reader",
+      "accept": {
+        "text/plain": [
+          ".txt"
+        ],
+        "application/pdf": [
+          ".pdf"
+        ],
+        "application/epub+zip": [
+          ".epub"
+        ]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "sao-reader",
+      "url": "reader?url=%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.mrpheonixteam.saoreader",
+      "id": "com.mrpheonixteam.saoreader"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "placeholder.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "platform": "wide",
+      "label": "واجهة القراءة الرئيسية مع الثيم المظلم"
+    },
+    {
+      "src": "placeholder.svg",
+      "sizes": "750x1334",
+      "type": "image/svg+xml",
+      "platform": "narrow",
+      "label": "تطبيق القراءة على الهاتف المحمول"
+    }
+  ]
+}
