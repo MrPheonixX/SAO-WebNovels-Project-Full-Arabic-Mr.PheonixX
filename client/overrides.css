@@ -1,0 +1,38 @@
+/* Overrides to remove restrictive protections and allow normal interactions */
+* {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  -webkit-touch-callout: default !important;
+}
+
+img, video, canvas, svg {
+  pointer-events: auto !important;
+  -webkit-user-drag: auto !important;
+  user-drag: auto !important;
+}
+
+/* Remove global watermark overlay from body */
+body::after {
+  content: none !important;
+}
+
+/* Re-enable printing */
+@media print {
+  * {
+    display: initial !important;
+    visibility: initial !important;
+    opacity: 1 !important;
+  }
+  body::before {
+    content: none !important;
+  }
+}
+
+/* Ensure any devtools-related hiding does not apply */
+.developer-tools-open {
+  display: initial !important;
+  visibility: initial !important;
+  opacity: 1 !important;
+}
