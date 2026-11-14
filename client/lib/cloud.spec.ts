@@ -6,6 +6,7 @@ import {
   submitReview,
   summarizeReviews,
   adminSetWorkStatus,
+  adminWorkViews,
   fetchWorkStatuses,
   getSessionUser,
   isAdmin,
@@ -270,5 +271,77 @@ describe("reviews", () => {
     expect((await deleteReview("not-an-id")).ok).toBe(false);
     expect((await deleteReview("11111111-1111-1111-1111-111111111111")).ok).toBe(true);
     expect(calls.some((c) => c.method === "DELETE")).toBe(true);
+  });
+});
+
+describe("session stability (no surprise logouts)", () => {
+  const expired = (extra: any = {}) =>
+    JSON.stringify({ access_token: "OLD", refresh_token: "R1", expires_at: 1, user: { id: "u1", email: "me@x.com", name: "K" }, ...extra });
+
+  it("refreshes only once when several requests run at the same time", async () => {
+    let refreshes = 0;
+    const calls = install((c) => {
+      if (c.url.includes("grant_type=refresh_token")) {
+        refreshes++;
+        // refresh tokens are single use: a second refresh with the same token is rejected
+        return refreshes === 1
+          ? { json: session({ access_token: "NEW", refresh_token: "R2" }) }
+          : { status: 400, json: { error_description: "Invalid Refresh Token: Already Used" } };
+      }
+      return { json: [] };
+    });
+    localStorage.setItem("sao-cloud-session", expired());
+    await Promise.all([adminWorkViews(), adminSetUserStatus("x", "active"), syncProgress(), adminWorkViews()]);
+    expect(refreshes).toBe(1);
+    expect(getSessionUser()?.id).toBe("u1");
+    const data = calls.filter((c) => c.url.includes("/rest/v1/"));
+    expect(data.every((c) => c.headers["Authorization"] === "Bearer NEW")).toBe(true);
+  });
+
+  it("stays signed in when the network or the server fails during a refresh", async () => {
+    install(() => ({ json: [] }));
+    (globalThis as any).fetch = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+    localStorage.setItem("sao-cloud-session", expired());
+    await adminWorkViews();
+    expect(getSessionUser()?.id).toBe("u1");
+    install((c) => (c.url.includes("grant_type=refresh_token") ? { status: 500 } : { json: [] }));
+    localStorage.setItem("sao-cloud-session", expired());
+    await adminWorkViews();
+    expect(getSessionUser()?.id).toBe("u1");
+  });
+
+  it("ends the session only when the server rejects the refresh token", async () => {
+    install((c) => (c.url.includes("grant_type=refresh_token") ? { status: 400, json: { error_description: "Invalid Refresh Token" } } : { json: [] }));
+    localStorage.setItem("sao-cloud-session", expired());
+    await adminWorkViews();
+    expect(getSessionUser()).toBe(null);
+  });
+
+  it("keeps the session another tab has just refreshed", async () => {
+    install((c) => {
+      if (c.url.includes("grant_type=refresh_token")) {
+        // the other tab wins the race and stores its new session
+        localStorage.setItem("sao-cloud-session", JSON.stringify({ access_token: "TAB2", refresh_token: "R9", expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: "u1", email: "me@x.com", name: "K" } }));
+        return { status: 400, json: { error_description: "Already Used" } };
+      }
+      return { json: [] };
+    });
+    localStorage.setItem("sao-cloud-session", expired());
+    await adminWorkViews();
+    expect(getSessionUser()?.id).toBe("u1");
+  });
+
+  it("refreshes and retries once when the API says the token expired", async () => {
+    let dataCalls = 0;
+    const calls = install((c) => {
+      if (c.url.includes("grant_type=refresh_token")) return { json: session({ access_token: "FRESH", refresh_token: "R2" }) };
+      dataCalls++;
+      return dataCalls === 1 ? { status: 401 } : { json: [{ user_id: "u1" }] };
+    });
+    localStorage.setItem("sao-cloud-session", JSON.stringify({ access_token: "STALE", refresh_token: "R1", expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: "u1", email: "me@x.com", name: "K" } }));
+    expect((await adminWorkViews()).ok).toBe(true);
+    expect(calls.filter((c) => c.url.includes("grant_type=refresh_token")).length).toBe(1);
   });
 });

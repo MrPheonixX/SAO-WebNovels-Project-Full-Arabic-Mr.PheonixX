@@ -203,7 +203,7 @@ export default function Profile() {
                   </Badge>
                 </div>
                 <p className="text-gray-300 mb-3">
-                  عضو منذ {new Date(user.joinDate).toLocaleDateString("ar-EG")}
+                  عضو منذ {new Date(user.joinDate).toLocaleDateString("ar-EG-u-nu-latn")}
                 </p>
                 <div className="mb-4">
                   <div className="flex justify-between text-sm text-gray-400 mb-1">
@@ -317,7 +317,7 @@ export default function Profile() {
                       <div>
                         <p className="font-semibold text-blue-300">{item.title}</p>
                         <p className="text-xs text-gray-400">
-                          آخر فتح {new Date(item.lastOpened).toLocaleDateString("ar-EG")} · {item.opens} مرة
+                          آخر فتح {new Date(item.lastOpened).toLocaleDateString("ar-EG-u-nu-latn")} · {item.opens} مرة
                         </p>
                       </div>
                       <Button size="sm" onClick={() => navigate(`/pdf-reader/${item.id}`)}>

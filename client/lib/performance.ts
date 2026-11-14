@@ -65,7 +65,7 @@ class PerformanceOptimizer {
     // تقدير عدد النوى
     const cores = navigator.hardwareConcurrency || 2;
 
-    // تقدير الذاكرة (تقريب��)
+    // تقدير الذاكرة (تقريبي)
     const ram = (navigator as any).deviceMemory || (cores >= 8 ? 8 : cores >= 4 ? 4 : 2);
 
     // معلومات الاتصال
@@ -229,7 +229,7 @@ class PerformanceOptimizer {
     return this.deviceInfo;
   }
 
-  // الحصول على الإعدادات ��لحالية
+  // الحصول على الإعدادات الحالية
   public getSettings(): PerformanceSettings {
     return this.settings;
   }

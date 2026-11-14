@@ -27,6 +27,7 @@ import {
   PDFWork,
 } from "@/data/pdfWorks";
 import { getWorkStatus, useWorkStatuses } from "@/lib/workStatus";
+import AuthButton from "@/components/AuthButton";
 import PDFCover from "@/components/PDFCover";
 
 const PDFWorksLibrary: React.FC = () => {
@@ -40,14 +41,15 @@ const PDFWorksLibrary: React.FC = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  // re-render when the admin hides/unhides a work
+  const statusVersion = useWorkStatuses();
 
   // Initialize filters from URL (?series=...&arc=...)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const s = params.get("series");
     const a = params.get("arc");
-    const statusVersion = useWorkStatuses();
-  const seriesList = getSeriesList();
+    const seriesList = getSeriesList();
     const arcsList = getArcsList();
     if (s && seriesList.includes(s)) setSelectedSeries(s);
     if (a && arcsList.includes(a)) setSelectedArc(a);
@@ -100,7 +102,7 @@ const PDFWorksLibrary: React.FC = () => {
   };
 
   const handleDownloadAttempt = () => {
-    alert("🚫 التحميل غير مسمو�� - المحتوى محمي بحقوق الطبع والنشر");
+    alert("🚫 التحميل غير مسموح - المحتوى محمي بحقوق الطبع والنشر");
   };
 
   const getSeriesColor = (series: string) => {
@@ -301,14 +303,17 @@ const PDFWorksLibrary: React.FC = () => {
                 مجموعة شاملة من الأعمال المترجمة بجودة عالية
               </p>
             </div>
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/")}
-              className="text-white hover:text-cyan-400"
-            >
-              <ArrowLeft className="w-4 h-4 ml-2" />
-              الرئيسية
-            </Button>
+            <div className="flex items-center gap-2">
+              <AuthButton />
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/")}
+                className="text-white hover:text-cyan-400"
+              >
+                <ArrowLeft className="w-4 h-4 ml-2" />
+                الرئيسية
+              </Button>
+            </div>
           </div>
 
           {/* إحصائيات سريعة */}
@@ -447,7 +452,7 @@ const PDFWorksLibrary: React.FC = () => {
                 لا توجد نتائج
               </h3>
               <p className="text-gray-400">
-                جرب ��غيير معايير البحث أو المرشحات
+                جرب تغيير معايير البحث أو المرشحات
               </p>
             </CardContent>
           </Card>

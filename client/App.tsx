@@ -6,7 +6,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyRetry } from "./lib/lazyRetry";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SecurityProvider from "./components/SecurityProvider";
 import { loadWorkStatuses } from "./lib/workStatus";
@@ -15,19 +16,19 @@ import NotFound from "./pages/NotFound";
 
 // Every page except the home page is loaded on demand, so the first visit
 // downloads far less code (the admin panel, login, readers... come later).
-const SAOLibrary = lazy(() => import("./pages/SAOLibrary"));
-const SAOProgressiveLibrary = lazy(() => import("./pages/SAOProgressiveLibrary"));
-const SideWorksLibrary = lazy(() => import("./pages/SideWorksLibrary"));
-const AnimeWorksLibrary = lazy(() => import("./pages/AnimeWorksLibrary"));
-const ClassicLiterature = lazy(() => import("./pages/ClassicLiterature"));
-const LightNovels = lazy(() => import("./pages/LightNovels"));
-const AllWorksLibrary = lazy(() => import("./pages/AllWorksLibrary"));
-const BookReader = lazy(() => import("./pages/BookReader"));
-const Login = lazy(() => import("./pages/Login"));
-const Profile = lazy(() => import("./pages/Profile"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const PDFWorksLibrary = lazy(() => import("./pages/PDFWorksLibrary"));
-const PDFReader = lazy(() => import("./pages/PDFReader"));
+const SAOLibrary = lazyRetry(() => import("./pages/SAOLibrary"));
+const SAOProgressiveLibrary = lazyRetry(() => import("./pages/SAOProgressiveLibrary"));
+const SideWorksLibrary = lazyRetry(() => import("./pages/SideWorksLibrary"));
+const AnimeWorksLibrary = lazyRetry(() => import("./pages/AnimeWorksLibrary"));
+const ClassicLiterature = lazyRetry(() => import("./pages/ClassicLiterature"));
+const LightNovels = lazyRetry(() => import("./pages/LightNovels"));
+const AllWorksLibrary = lazyRetry(() => import("./pages/AllWorksLibrary"));
+const BookReader = lazyRetry(() => import("./pages/BookReader"));
+const Login = lazyRetry(() => import("./pages/Login"));
+const Profile = lazyRetry(() => import("./pages/Profile"));
+const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"));
+const PDFWorksLibrary = lazyRetry(() => import("./pages/PDFWorksLibrary"));
+const PDFReader = lazyRetry(() => import("./pages/PDFReader"));
 
 const PageLoader = () => (
   <div
@@ -173,7 +174,7 @@ function initializeApp() {
         ">
           <div>
             <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
-            <h1 style="font-size: 2rem; margin-bottom: 1rem;">خطأ في تح  يل التطبيق</h1>
+            <h1 style="font-size: 2rem; margin-bottom: 1rem;">خطأ في تحميل التطبيق</h1>
             <p style="margin-bottom: 1rem;">حدث خطأ أثناء تحميل منصة قراءة ساو العربية</p>
             <p style="color: #ef4444; font-family: monospace; font-size: 0.9rem;">${error.message}</p>
             <button

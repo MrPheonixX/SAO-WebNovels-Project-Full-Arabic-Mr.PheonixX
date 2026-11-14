@@ -60,6 +60,37 @@ function writeSession(s: CloudSession | null) {
   }
 }
 
+/** Raw stored session: a stable value for useSyncExternalStore. */
+export function getSessionSnapshot(): string | null {
+  try {
+    return cloudEnabled ? localStorage.getItem(SESSION_KEY) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Calls back when the session changes here or in another tab. */
+export function subscribeSession(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === null || e.key === SESSION_KEY) callback();
+  };
+  window.addEventListener("sao-auth", callback);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    window.removeEventListener("sao-auth", callback);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+export function userFromSnapshot(raw: string | null): CloudUser | null {
+  try {
+    return raw ? ((JSON.parse(raw) as CloudSession).user ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const getSessionUser = (): CloudUser | null =>
   cloudEnabled ? (readSession()?.user ?? null) : null;
 
@@ -113,21 +144,37 @@ async function authCall(
   }
 }
 
-async function freshSession(): Promise<CloudSession | null> {
+// Only one refresh may run at a time. Supabase refresh tokens are single-use: when
+// several requests refreshed in parallel, all but the first were rejected and the
+// reader was logged out for no reason.
+let refreshInFlight: Promise<CloudSession | null> | null = null;
+
+function freshSession(force = false): Promise<CloudSession | null> {
   const s = readSession();
-  if (!s) return null;
-  if (s.expires_at - 60 > Date.now() / 1000) return s;
-  const r = await authCall("token?grant_type=refresh_token", {
-    body: { refresh_token: s.refresh_token },
+  if (!s) return Promise.resolve(null);
+  if (!force && s.expires_at - 60 > Date.now() / 1000) return Promise.resolve(s);
+  refreshInFlight ??= refreshSession(s).finally(() => {
+    refreshInFlight = null;
   });
-  if (!r.ok) {
-    // Refresh token rejected: the session is really over. A network error keeps it.
-    if (r.status && r.status >= 400 && r.status < 500) writeSession(null);
-    return null;
+  return refreshInFlight;
+}
+
+async function refreshSession(stale: CloudSession): Promise<CloudSession | null> {
+  const r = await authCall("token?grant_type=refresh_token", {
+    body: { refresh_token: stale.refresh_token },
+  });
+  if (r.ok) {
+    const next = toSession(r.data);
+    writeSession(next);
+    return next;
   }
-  const next = toSession(r.data);
-  writeSession(next);
-  return next;
+  // Another tab may have refreshed with this token a moment ago: use its result.
+  const current = readSession();
+  if (current && current.refresh_token !== stale.refresh_token) return current;
+  // End the session only when the server says the refresh token is no longer valid.
+  // A network problem or a server error must never log the reader out.
+  if (r.status === 400 || r.status === 401 || r.status === 403) writeSession(null);
+  return null;
 }
 
 async function rest(
@@ -142,15 +189,22 @@ async function rest(
       bearer = s.access_token;
     }
     const { anonymous: _anonymous, headers, ...fetchInit } = init;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-      ...fetchInit,
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${bearer}`,
-        "Content-Type": "application/json",
-        ...(headers ?? {}),
-      },
-    });
+    const send = (token: string) =>
+      fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        ...fetchInit,
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          ...(headers ?? {}),
+        },
+      });
+    let res = await send(bearer);
+    if (res.status === 401 && !init.anonymous) {
+      // the access token expired earlier than we thought (e.g. wrong clock): refresh once
+      const renewed = await freshSession(true);
+      if (renewed) res = await send(renewed.access_token);
+    }
     if (!res.ok) return fail(`Request failed (${res.status})`, res.status);
     const text = await res.text();
     return ok(text ? JSON.parse(text) : null);

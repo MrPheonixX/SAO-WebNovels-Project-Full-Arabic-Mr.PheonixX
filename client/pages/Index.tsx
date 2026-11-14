@@ -1,4 +1,5 @@
 import { pdfWorks } from "@/data/pdfWorks";
+import AuthButton from "@/components/AuthButton";
 import { seriesVolumes } from "@/lib/catalogView";
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -162,13 +163,7 @@ export default function Index() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
-                onClick={() => navigate("/login")}
-              >
-                تسجيل دخول
-              </Button>
+              <AuthButton />
 
               {/* Theme Switcher */}
               <div className="flex items-center space-x-2 bg-gray-800/50 p-2 rounded-lg">
@@ -351,7 +346,7 @@ export default function Index() {
             </h2>
 
             <p className="text-xl text-gray-300 max-w-4xl mx-auto mb-8 leading-relaxed animate-pulse">
-              أول منصة رسمية لقراءة Sword Art Online بالعربية
+              منصة لقراءة Sword Art Online بالعربية
               <br />
               <span
                 className="font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
@@ -426,10 +421,10 @@ export default function Index() {
                 </Badge>
               </div>
               <CardDescription className="text-gray-300 text-lg">
-                28 مجلد - منظور كيريتو الأساسي
+                {catalogStats.sao} مجلد - منظور كيريتو الأساسي
                 <br />
-                <span className="text-blue-400">
-                  28 Volumes - Kirito's Perspective
+                <span dir="ltr" className="inline-block text-blue-400">
+                  {catalogStats.sao} Volumes - Kirito's Perspective
                 </span>
               </CardDescription>
             </CardHeader>
@@ -437,7 +432,7 @@ export default function Index() {
             <CardContent className="relative z-10">
               <p className="text-gray-300 mb-6 leading-relaxed">
                 القصة الأصلية لكيريتو وأسونا في عالم ساو الافتراضي. مغامرة
-                ملحمية تمتد عبر عوالم متعدد�� ��ع ترجمة دقيقة ومراجعة احترافية.
+                ملحمية تمتد عبر عوالم متعددة مع ترجمة دقيقة ومراجعة احترافية.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
@@ -446,7 +441,7 @@ export default function Index() {
                   className="bg-blue-500/20 text-blue-300"
                 >
                   <BookOpen className="w-3 h-3 mr-1" />
-                  28 مجلد
+                  {catalogStats.sao} مجلد
                 </Badge>
                 <Badge
                   variant="secondary"
@@ -501,18 +496,18 @@ export default function Index() {
                 </Badge>
               </div>
               <CardDescription className="text-gray-300 text-lg">
-                8 مجلدات - منظور أسونا المفصل
+                {catalogStats.progressive} مجلدات - منظور أسونا المفصل
                 <br />
-                <span className="text-purple-400">
-                  9 Volumes - Asuna's Detailed Perspective
+                <span dir="ltr" className="inline-block text-purple-400">
+                  {catalogStats.progressive} Volumes - Asuna's Detailed Perspective
                 </span>
               </CardDescription>
             </CardHeader>
 
             <CardContent className="relative z-10">
               <p className="text-gray-300 mb-6 leading-relaxed">
-                نفس أحداث سا�� ولكن من منظور أسونا مع تفاصيل أعمق وقصص إضافية
-                ��م تُروى من قبل. كل طابق يُحكى بتفاصيل مذهلة.
+                نفس أحداث ساو ولكن من منظور أسونا مع تفاصيل أعمق وقصص إضافية
+                لم تُروى من قبل. كل طابق يُحكى بتفاصيل مذهلة.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
@@ -558,7 +553,7 @@ export default function Index() {
         {/* Side Works Preview */}
         <section className="mb-20">
           <h3 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            أعمال إضافي�� ممي��ة
+            أعمال إضافية مميزة
           </h3>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <Card
@@ -654,10 +649,10 @@ export default function Index() {
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-green-400 text-xl">
-                  تحليل لغوي فوري
+                  قراءة داخل الموقع
                 </CardTitle>
                 <CardDescription className="text-gray-300">
-                  أسرع الخوارزميات ل��ترجمة الفورية
+                  اقرأ مباشرة من المتصفح على الكمبيوتر والهاتف بدون تحميل الملفات
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -670,10 +665,10 @@ export default function Index() {
                   <Shield className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-purple-400 text-xl">
-                  حماية مطلقة
+                  حسابات وسجل قراءة
                 </CardTitle>
                 <CardDescription className="text-gray-300">
-                  منع النسخ وقراءة آمنة 100%
+                  سجّل دخولك لحفظ ما قرأته ومزامنته بين أجهزتك
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -686,10 +681,10 @@ export default function Index() {
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-blue-400 text-xl">
-                  قراءة ثلاثية الأبعاد
+                  تقييمات وتعليقات
                 </CardTitle>
                 <CardDescription className="text-gray-300">
-                  3D Flipbook، Slide، و Scroll
+                  قيّم الأعمال واقرأ آراء القرّاء
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -702,10 +697,10 @@ export default function Index() {
                   <Play className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-orange-400 text-xl">
-                  نطق عربي
+                  قريباً: القراءة الصوتية
                 </CardTitle>
                 <CardDescription className="text-gray-300">
-                  قراءة الأصوات العربية بتقنيات متطورة
+                  ميزة قيد التخطيط ولم تتوفر بعد
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -734,10 +729,10 @@ export default function Index() {
                   <Globe className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-teal-400 text-xl">
-                  تطبيق كامل
+                  تثبيت كتطبيق
                 </CardTitle>
                 <CardDescription className="text-gray-300">
-                  PWA + قراءة بدون إنترنت
+                  ثبّت الموقع على هاتفك من قائمة المتصفح
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -756,7 +751,7 @@ export default function Index() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   <span className="text-blue-300">Sword Art Online</span>
-                  <Badge className="bg-blue-500 text-white">28 مجلد</Badge>
+                  <Badge className="bg-blue-500 text-white">{catalogStats.sao} مجلد</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
                   <span className="text-purple-300">
@@ -788,7 +783,7 @@ export default function Index() {
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-blue-400 mb-2">
-                    {catalogStats.pages.toLocaleString("ar-EG")}
+                    {catalogStats.pages.toLocaleString("en-US")}
                   </div>
                   <p className="text-gray-300">إجمالي الصفحات</p>
                 </div>

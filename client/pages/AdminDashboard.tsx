@@ -465,7 +465,7 @@ export default function AdminDashboard() {
                   <h3 className="text-2xl font-bold text-blue-300">
                     {stats.totalVolumes}
                   </h3>
-                  <p className="text-gray-300">إجمالي ��لمجلدات</p>
+                  <p className="text-gray-300">إجمالي المجلدات</p>
                   <Badge className="mt-2 bg-blue-500/20">
                     {stats.publishedVolumes} منشور
                   </Badge>

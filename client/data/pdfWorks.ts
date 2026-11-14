@@ -249,7 +249,7 @@ export const pdfWorks: PDFWork[] = [
     fileName: "Sword_Art_Online_Volume_10_Alicization_Running.pdf",
     series: "Sword Art Online",
     titleEn: "Sword Art Online - Volume 10 - Alicization Running",
-    titleAr: "فن السيف عبر الإنترنت - المجلد 10 - أليسيزيش�� الجارية",
+    titleAr: "فن السيف عبر الإنترنت - المجلد 10 - أليسيزيشن الجارية",
     pdfUrlRaw: "https://raw.githubusercontent.com/MrPheonixX/My-Works-PDF-/main/Sword_Art_Online_Volume_10_Alicization_Running.pdf",
     backgroundImage: null,
     volumeNumber: 10,
@@ -341,7 +341,7 @@ export const pdfWorks: PDFWork[] = [
     status: 'available',
     readProgress: 0,
     coverColor: "from-violet-500 to-purple-500",
-    tags: ["وحدة", "قوة", "��حالف"]
+    tags: ["وحدة", "قوة", "تحالف"]
   },
 
   {
@@ -504,7 +504,7 @@ export const pdfWorks: PDFWork[] = [
     status: 'available',
     readProgress: 0,
     coverColor: "from-pink-500 to-red-500",
-    tags: ["رومانسي", "قصص ��انبية", "مؤثر"]
+    tags: ["رومانسي", "قصص جانبية", "مؤثر"]
   },
 
   // Unital Ring Continued
@@ -605,7 +605,7 @@ export const pdfWorks: PDFWork[] = [
     status: 'available',
     readProgress: 0,
     coverColor: "from-emerald-500 to-teal-500",
-    tags: ["تعقيد��ت", "تحديات", "تطور"]
+    tags: ["تعقيدات", "تحديات", "تطور"]
   },
 
   {
@@ -699,7 +699,7 @@ export const pdfWorks: PDFWork[] = [
     backgroundImage: null,
     volumeNumber: 4,
     arc: "Progressive",
-    description: "المزيد من التفا��يل المذهلة",
+    description: "المزيد من التفاصيل المذهلة",
     publishYear: 2015,
     pages: 310,
     rating: 9.1,

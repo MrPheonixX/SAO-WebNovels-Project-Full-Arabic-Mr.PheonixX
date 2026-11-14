@@ -291,7 +291,7 @@ class SecurityManager {
           <h2 style="color: #ef4444; margin-bottom: 1rem;">مانع الإعلانات مُفعّل</h2>
           <p style="line-height: 1.6; margin-bottom: 2rem;">
             يبدو أنك تستخدم مانع إعلانات. نحن نعتمد على الإعلانات لتوفير المحتوى مجاناً.
-            يرجى إلغاء تفعيل مانع الإعلانات أو إض��فة موقعنا إلى القائمة البيضاء.
+            يرجى إلغاء تفعيل مانع الإعلانات أو إضافة موقعنا إلى القائمة البيضاء.
           </p>
           <button onclick="location.reload()" style="
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);

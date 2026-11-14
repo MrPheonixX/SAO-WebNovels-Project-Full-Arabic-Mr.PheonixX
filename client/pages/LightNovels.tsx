@@ -112,7 +112,7 @@ const lightNovels = [
     rating: 9.0,
     genre: ["إيسيكاي", "استراتيجي", "كوميدي", "إثارة"],
     description:
-      "الأخوين سورا وشي��و ينتقلان لعالم حيث كل شيء يُحل بالألعاب. معارك ذهنية وألعاب استراتيجية معقدة.",
+      "الأخوين سورا وشيرو ينتقلان لعالم حيث كل شيء يُحل بالألعاب. معارك ذهنية وألعاب استراتيجية معقدة.",
     cover: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
     readTime: "20 ساعة",
     chapters: 240,
@@ -133,13 +133,13 @@ const lightNovels = [
     rating: 8.8,
     genre: ["إيسيكاي", "أكشن", "بناء الحضارة", "فانتازي"],
     description:
-      "سالاري مان يتجسد كوحل في عالم فانتازي ويبني إمبراطورية. قصة عن ب���اء الحضارة والقيادة الحكيمة.",
+      "سالاري مان يتجسد كوحل في عالم فانتازي ويبني إمبراطورية. قصة عن بناء الحضارة والقيادة الحكيمة.",
     cover: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
     readTime: "35 ساعة",
     chapters: 420,
     language: "عربي",
     popularity: "عالية",
-    themes: ["القيادة", "بناء ��لمجتمع", "التطور", "الحكمة"],
+    themes: ["القيادة", "بناء المجتمع", "التطور", "الحكمة"],
     ageRating: "13+",
   },
   {
@@ -393,7 +393,7 @@ export default function LightNovels() {
             <div className="flex flex-wrap justify-center gap-3">
               <span className="text-cyan-400 font-semibold flex items-center gap-2">
                 <Filter className="w-4 h-4" />
-                ����أنواع:
+                الأنواع:
               </span>
               {allGenres.map((genre) => (
                 <button

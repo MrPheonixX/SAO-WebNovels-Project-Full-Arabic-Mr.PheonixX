@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle,
   BookOpen,
-  Download,
   Share2,
   ArrowLeft,
 } from "lucide-react";
@@ -68,11 +67,6 @@ const PDFReader: React.FC = () => {
 
   const handleBackToLibrary = () => {
     navigate("/all-works");
-  };
-
-  // منع محاولات التحميل
-  const handleDownloadAttempt = () => {
-    alert("🚫 التحميل غير مسموح - المحتوى محمي بحقوق الطبع والنشر");
   };
 
   if (isLoading) {
@@ -260,15 +254,6 @@ const PDFReader: React.FC = () => {
 
                   <Button
                     variant="outline"
-                    onClick={handleDownloadAttempt}
-                    className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                  >
-                    <Download className="w-4 h-4 ml-2" />
-                    تحميل (محظور)
-                  </Button>
-
-                  <Button
-                    variant="outline"
                     className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
                   >
                     <Share2 className="w-4 h-4 ml-2" />
@@ -291,7 +276,7 @@ const PDFReader: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">الصفحة الحال��ة</span>
+                    <span className="text-gray-400">الصفحة الحالية</span>
                     <span className="text-white font-semibold">1</span>
                   </div>
                   <div className="flex justify-between">
@@ -315,14 +300,12 @@ const PDFReader: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-lg text-red-400 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5" />
-                  تنبيه أمني
+                  تنبيه
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm text-red-300">
-                  <p>🚫 التحميل محظور</p>
-                  <p>🚫 النسخ ممنوع</p>
-                  <p>🚫 لقطات الشاشة محجوبة</p>
+                  <p>📖 القراءة داخل الموقع فقط</p>
                   <p>📜 المحتوى محمي بحقوق الطبع والنشر</p>
                 </div>
               </CardContent>

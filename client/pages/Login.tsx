@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuthUser } from "@/lib/useAuthUser";
 import {
   cloudEnabled,
   parseRecoveryHash,
@@ -100,8 +101,16 @@ export default function Login() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const authUser = useAuthUser();
   const [resetToken, setResetToken] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
+
+  // Already signed in (and not resetting a password): nothing to do here
+  useEffect(() => {
+    if (authUser && !resetToken && !window.location.hash.includes("type=recovery")) {
+      navigate("/profile", { replace: true });
+    }
+  }, [authUser, resetToken, navigate]);
 
   // Arriving from the password-reset e-mail: ask for a new password.
   useEffect(() => {
