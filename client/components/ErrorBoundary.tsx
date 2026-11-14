@@ -96,6 +96,32 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 إعادة تحميل
               </button>
               <button
+                onClick={async () => {
+                  // clear the service worker and its caches, then reload fresh
+                  try {
+                    // only this app's worker: other sites on the same address keep theirs
+                    const scope = new URL(import.meta.env.BASE_URL, window.location.origin).href;
+                    const regs = (await navigator.serviceWorker?.getRegistrations()) ?? [];
+                    await Promise.all(regs.filter((r) => r.scope === scope).map((r) => r.unregister()));
+                    const names = await caches.keys();
+                    await Promise.all(names.filter((n) => n.startsWith("sao-")).map((n) => caches.delete(n)));
+                  } catch {
+                    /* best effort */
+                  }
+                  window.location.reload();
+                }}
+                style={{
+                  background: "#16a34a",
+                  color: "white",
+                  border: "none",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                إصلاح وإعادة التحميل
+              </button>
+              <button
                 onClick={() => {
                   window.location.href = import.meta.env.BASE_URL;
                 }}

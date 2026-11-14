@@ -17,7 +17,7 @@ const SimpleDevToolsBlocker: React.FC = () => {
       );
     };
 
-    // إذا كان وض�� المطور نشط، لا نطبق أي حماية
+    // إذا كان وضع المطور نشط، لا نطبق أي حماية
     if (isDeveloperMode()) {
       console.log(
         "🔧 Developer mode active - Security disabled for development",

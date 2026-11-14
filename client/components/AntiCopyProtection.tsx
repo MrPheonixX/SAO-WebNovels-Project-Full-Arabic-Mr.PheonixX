@@ -165,7 +165,7 @@ const AntiCopyProtection: React.FC = () => {
           user-drag: none !important;
         }
         
-        /* منع طبا��ة الصفحة */
+        /* منع طباعة الصفحة */
         @media print {
           * { display: none !important; }
         }
@@ -210,7 +210,7 @@ const AntiCopyProtection: React.FC = () => {
       document.body.appendChild(watermark);
     };
 
-    // كشف أدوات الشبكة والتطو��ر
+    // كشف أدوات الشبكة والتطوير
     const detectNetworkTools = () => {
       // كشف فتح نافذة جديدة لعرض المصدر
       const originalOpen = window.open;

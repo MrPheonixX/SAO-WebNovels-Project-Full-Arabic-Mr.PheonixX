@@ -179,7 +179,7 @@ export default function WorkReviews({ workId }: { workId: string }) {
                   <span className="font-semibold text-white">{r.author}</span>
                   <Stars value={r.stars} size="w-3.5 h-3.5" />
                   <span className="text-xs text-gray-400">
-                    {new Date(r.createdAt).toLocaleDateString("ar-EG")}
+                    {new Date(r.createdAt).toLocaleDateString("ar-EG-u-nu-latn")}
                   </span>
                 </div>
                 {(admin || r.userId === user?.id) && (

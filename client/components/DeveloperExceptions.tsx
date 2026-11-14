@@ -203,7 +203,7 @@ const DeveloperExceptions: React.FC = () => {
       (window as any).developerHelp = () => {
         console.log(`
 🔧 أوامر المطور المتاحة:
-━━━━━━��━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━
 
 🟢 enableDeveloperMode() - تفعيل وضع المطور (حساب المدير)
 🔴 disableDeveloperMode() - إيقاف وضع المطور  

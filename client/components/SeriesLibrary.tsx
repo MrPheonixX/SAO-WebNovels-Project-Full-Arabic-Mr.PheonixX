@@ -12,6 +12,7 @@ import {
   type LibrarySort,
 } from "@/lib/catalogView";
 import { getWorkStatus, useWorkStatuses } from "@/lib/workStatus";
+import AuthButton from "@/components/AuthButton";
 
 // Tailwind needs complete class names, so every theme spells them out.
 const THEMES = {
@@ -91,7 +92,10 @@ export default function SeriesLibrary({ series, title, subtitle, theme }: Series
             </h1>
             <p className={`${t.sub} mt-2`}>{subtitle}</p>
           </div>
-          <Badge className={t.badge}>{all.length} مجلد</Badge>
+          <div className="flex items-center gap-3">
+            <AuthButton />
+            <Badge className={t.badge}>{all.length} مجلد</Badge>
+          </div>
         </div>
       </header>
 
@@ -191,7 +195,7 @@ export default function SeriesLibrary({ series, title, subtitle, theme }: Series
 
                   {last && (
                     <p className="text-xs text-gray-400">
-                      آخر فتح: {new Date(last).toLocaleDateString("ar-EG")}
+                      آخر فتح: {new Date(last).toLocaleDateString("ar-EG-u-nu-latn")}
                     </p>
                   )}
 

@@ -210,7 +210,7 @@ const DevToolsBlocker: React.FC = () => {
       });
     };
 
-    // م��ع فتح المصدر في نافذة جديدة
+    // منع فتح المصدر في نافذة جديدة
     const blockViewSource = () => {
       // منع window.open
       const originalOpen = window.open;
@@ -282,7 +282,7 @@ const DevToolsBlocker: React.FC = () => {
           console.warn("تعذر تجميد Function.prototype:", error);
         }
       } catch (error) {
-        console.warn("تعذر تطبيق تج��يد الكائنات:", error);
+        console.warn("تعذر تطبيق تجميد الكائنات:", error);
       }
     };
 

@@ -45,7 +45,7 @@ const RandomAnimeEmojis: React.FC = () => {
     { emoji: "🎶", message: "لحن جميل" },
     { emoji: "🎤", message: "صوت قوي" },
     { emoji: "🎧", message: "استمتع بالصوت" },
-    { emoji: "🕰️", message: "ال��قت ثمين" },
+    { emoji: "🕰️", message: "الوقت ثمين" },
     { emoji: "🌙", message: "ليل هادئ" },
     { emoji: "☀️", message: "شمس مشرقة" },
     { emoji: "🌈", message: "قوس قزح جميل" },
@@ -146,7 +146,7 @@ const RandomAnimeEmojis: React.FC = () => {
 
     setNotifications((prev) => [...prev, notification]);
 
-    // إزالة الإشعار بع�� مدة
+    // إزالة الإشعار بعد مدة
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
     }, notification.duration);

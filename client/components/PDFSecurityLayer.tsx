@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 const PDFSecurityLayer: React.FC = () => {
   useEffect(() => {
-    // منع تحمي�� PDF بشكل إضافي
+    // منع تحميل PDF بشكل إضافي
     const preventPDFDownload = () => {
       // حجب المواقع المعروفة لتحميل PDF
       const blockedDomains = [
@@ -192,7 +192,7 @@ const PDFSecurityLayer: React.FC = () => {
             visibility: hidden !important;
           }
           body::before {
-            content: "🚫 الطباعة محظورة - المحتوى محم�� بحقوق الطبع والنشر © MrPheonixX";
+            content: "🚫 الطباعة محظورة - المحتوى محمي بحقوق الطبع والنشر © MrPheonixX";
             display: block !important;
             position: fixed !important;
             top: 50% !important;
@@ -287,7 +287,7 @@ const PDFSecurityLayer: React.FC = () => {
         const clipboardData = e.clipboardData?.getData('text/plain') || '';
         if (clipboardData.includes('pdf') || clipboardData.includes('download')) {
           e.preventDefault();
-          alert('🚫 لصق محتوى مشبو�� محظور');
+          alert('🚫 لصق محتوى مشبوه محظور');
         }
       });
     };

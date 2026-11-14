@@ -45,7 +45,7 @@ export const InteractiveButton: React.FC<InteractiveButtonProps> = ({
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    // إنشاء جسيم��ت عند التحويم
+    // إنشاء جسيمات عند التحويم
     const newParticles = Array.from({ length: 5 }, (_, i) => ({
       id: Date.now() + i,
       x: Math.random() * 100,
@@ -277,7 +277,7 @@ export const InteractiveExperience: React.FC = () => {
     },
     { id: "ice", name: "❄️ الجليد", color: "from-cyan-500 to-blue-500" },
     { id: "fire", name: "🔥 النار", color: "from-red-500 to-orange-500" },
-    { id: "magic", name: "�� السحر", color: "from-purple-500 to-pink-500" },
+    { id: "magic", name: "✨ السحر", color: "from-purple-500 to-pink-500" },
   ];
 
   const triggerEffect = (effectId: string) => {

@@ -380,7 +380,7 @@ export default function UIEnhancements() {
         }
       }
 
-      /* تحسينات ��لأداء */
+      /* تحسينات الأداء */
       .sao-gpu-accelerated {
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
