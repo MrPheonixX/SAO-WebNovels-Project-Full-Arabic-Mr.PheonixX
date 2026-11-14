@@ -206,7 +206,7 @@ const securedPdfUrl = `${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&me
 
 ---
 
-## 🎯 المميزا�� المتقدمة
+## 🎯 المميزات المتقدمة
 
 ### 1. تجربة القراءة:
 - ⏱️ تتبع وقت القراءة الفعلي

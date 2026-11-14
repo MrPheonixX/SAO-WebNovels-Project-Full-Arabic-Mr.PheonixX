@@ -174,7 +174,7 @@
     <!-- Security Headers -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; media-src 'self'; object-src 'self' blob:; frame-src 'self' blob:; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; media-src 'self'; object-src 'self' blob:; frame-src 'self' blob:; worker-src 'self' blob:; base-uri 'self'; form-action 'self';"
     />
 
     <!-- Preload Critical Resources -->
@@ -602,31 +602,20 @@
     <script>
       // Register Service Worker
       if ("serviceWorker" in navigator) {
+        const hadController = Boolean(navigator.serviceWorker.controller);
+        let reloaded = false;
+        // A new version took over: reload once so the page and its scripts match
+        // (not on a first visit, and never in a loop).
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!hadController || reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
         window.addEventListener("load", () => {
           navigator.serviceWorker
-            .register("%BASE_URL%sw.js")
-            .then((registration) => {
-              console.log("🛡️ SW registered successfully:", registration.scope);
-
-              // Listen for updates
-              registration.addEventListener("updatefound", () => {
-                const newWorker = registration.installing;
-                if (newWorker) {
-                  newWorker.addEventListener("statechange", () => {
-                    if (
-                      newWorker.state === "installed" &&
-                      navigator.serviceWorker.controller
-                    ) {
-                      // New content available
-                      showUpdateNotification();
-                    }
-                  });
-                }
-              });
-            })
-            .catch((error) => {
-              console.log("❌ SW registration failed:", error);
-            });
+            .register("%BASE_URL%sw.js", { updateViaCache: "none" })
+            .then((registration) => registration.update())
+            .catch(() => {});
         });
       }
 

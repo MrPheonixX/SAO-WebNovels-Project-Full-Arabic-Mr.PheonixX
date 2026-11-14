@@ -262,7 +262,7 @@ export const SITE_CONFIG = {
 ### 5. بناء المشروع للإنتاج
 
 ```bash
-# بناء ��لمشروع
+# بناء المشروع
 npm run build
 
 # الملفات النهائية ستكون في مجلد dist/
@@ -924,7 +924,7 @@ function calculateProgress(currentPage: number, totalPages: number): number {
 ```
 تأكد من:
 - زيارة المجلدات أثناء الاتصال بالإنترنت أولاً
-- السماح للتطبيق بالتخ��ين المحلي
+- السماح للتطبيق بالتخزين المحلي
 - تفعيل JavaScript في المتصفح
 - استخدام متصفح حديث يدعم Service Workers
 ```

@@ -60,7 +60,7 @@ Route Path              Component                   Status
 
 **Homepage Navigation:**
 
-- ✅ "استكشف السيرفرات" ��� `navigate("/sao")`
+- ✅ "استكشف السيرفرات" → `navigate("/sao")`
 - ✅ "دخول للمكتبة" → `navigate("/progressive")`
 - ✅ "تسجيل دخول" → `navigate("/login")`
 

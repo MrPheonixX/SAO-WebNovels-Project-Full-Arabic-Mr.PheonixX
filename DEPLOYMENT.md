@@ -20,7 +20,7 @@
 - مكتبة الأعمال الجانبية (NHK, No Longer Human)
 - عرض منظم مع معاينات وإحصائيات
 
-��� **أنماط القراءة الثلاثة**
+📖 **أنماط القراءة الثلاثة**
 
 - وضع التمرير (Webtoon-style)
 - كتاب ثلاثي الأبعاد مع أصوات تقليب الصفحات
@@ -56,7 +56,7 @@
 - نظام الإنجازات والشارات
 - تتبع تقدم القراءة تلقائياً
 
-✅ **كشف مان�� الإعلانات**
+✅ **كشف مانع الإعلانات**
 
 - تحذيرات متحركة مع إيموجي
 - رسائل ودية ومتنوعة
@@ -196,7 +196,7 @@ const ADSENSE_CLIENT = "ca-pub-XXXXXXXXXXXXXXXX"; // معرفك
 
 ## 📊 المعايير المحققة
 
-✅ **التصميم**: مستوحى من الموق�� المرجعي مع تحسينات
+✅ **التصميم**: مستوحى من الموقع المرجعي مع تحسينات
 ✅ **الوظائف**: جميع الميزات المطلوبة مكتملة  
 ✅ **الأمان**: حماية متقدمة ضد النسخ والتحميل
 ✅ **الأداء**: تحميل سريع أقل من 2 ثانية
@@ -263,3 +263,17 @@ Then `/admin-panel` accepts your e-mail + password. Nobody can become an admin f
 - Optional: **Settings → Secrets and variables → Actions → Variables → New variable** `ADSENSE_CLIENT` = your `ca-pub-…` id turns ads on.
   Without it no ad code is loaded at all.
 - The workflow sets `VITE_SITE_URL` (canonical / social-preview address) automatically from the repository name.
+
+## 🛠️ If the site shows an error or old content after an update
+1. Open the site and refresh once or twice. The new service worker replaces the old one and removes its caches.
+2. On the error screen press **إصلاح وإعادة التحميل** (clears only this app's worker and caches).
+3. Still wrong? Open the site in a private/incognito window: if it works there, it is only an old cache in your normal browser.
+4. Do not "clear all site data" for `<user>.github.io`: all your GitHub Pages sites share that address, so it would also erase the other sites' saved data.
+5. Send the text shown under "تفاصيل الخطأ التقنية" so the cause can be found.
+
+## 📚 Where the novels are served from
+- Each book is looked up in the site's own `books/` folder first, then in the external repository.
+- On every deploy the workflow copies all PDFs of `MrPheonixX/My-Works-PDF-` into the published `books/` folder
+  (change the source with the repository variable `CONTENT_REPO`). PDFs you commit in `public/books/` are kept as they are.
+- GitHub Pages allows at most 1 GB for the whole site. The deploy log prints the size; above ~950 MB it stops.
+- Readers never see a download or "open in new tab" button; the book is drawn inside the page.

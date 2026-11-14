@@ -168,7 +168,7 @@ public/
    - Screen reader friendly
    - Keyboard navigation
 
-3. **Security** - ��� ENTERPRISE LEVEL
+3. **Security** - ⚠️ browser-side deterrents only (admin access is checked by the database)
 
    - Content Security Policy
    - Anti-piracy protection
