@@ -28,6 +28,11 @@ jobs:
       # can never fail the deploy.
       - run: npm install --no-audit --no-fund
 
+      # Stops the deploy if the code uses a name that does not exist
+      # (such a mistake builds fine but crashes the page when it opens).
+      - name: Check for undefined names
+        run: node scripts/check-names.mjs
+
       # https://<user>.github.io/<repo>/  ->  base "/<repo>/"
       # https://<user>.github.io/ (repo named <user>.github.io)  ->  base "/"
       - name: Work out the site base path
@@ -50,6 +55,21 @@ jobs:
           # Set the repository variable ADSENSE_CLIENT (Settings > Variables) to enable ads
           VITE_ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
 
+      # The novels live inside the site itself (books/ folder), so readers never
+      # leave the website. Files committed in public/books/ are kept; every other
+      # PDF of the content repository is copied in.
+      - name: Add the novel files to the site
+        env:
+          CONTENT_REPO: ${{ vars.CONTENT_REPO || 'MrPheonixX/My-Works-PDF-' }}
+        run: |
+          mkdir -p books-staging
+          if git clone --depth 1 "https://github.com/${CONTENT_REPO}.git" content-repo; then
+            find content-repo -type f -iname '*.pdf' -not -path '*/.git/*' -print0 | xargs -0 -I{} cp --update=none "{}" books-staging/
+          else
+            echo "::warning::could not clone ${CONTENT_REPO}: only the books committed in public/books/ will be inside the site"
+          fi
+          ls books-staging | wc -l
+
       - name: Prepare the Pages artifact
         env:
           PAGES_BASE: ${{ steps.base.outputs.path }}
@@ -59,6 +79,9 @@ jobs:
           # Pages has no SPA fallback: unknown paths get 404.html, which is the app itself.
           cp pages-out/index.html pages-out/404.html
           touch pages-out/.nojekyll
+          mkdir -p pages-out/books
+          cp --update=none books-staging/*.pdf pages-out/books/ 2>/dev/null || true
+          node scripts/check-books.mjs pages-out
 
           # Guards: fail loudly instead of publishing a broken site.
           if grep -q '/client/App.tsx' pages-out/index.html; then
@@ -70,7 +93,7 @@ jobs:
           if [ "${PAGES_BASE}" != "/" ] && grep -Eq '(src|href)="/(assets|favicon|manifest|icons)' pages-out/index.html; then
             echo "::error::index.html still has root-relative URLs; the site would 404 under ${PAGES_BASE}"; exit 1
           fi
-          if grep -R -q 'service_role' pages-out 2>/dev/null; then
+          if grep -R -q --exclude-dir=books 'service_role' pages-out 2>/dev/null; then
             echo "::error::a service_role key must never be shipped to the browser"; exit 1
           fi
 
