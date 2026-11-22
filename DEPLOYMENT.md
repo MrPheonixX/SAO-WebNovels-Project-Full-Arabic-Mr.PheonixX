@@ -271,9 +271,14 @@ Then `/admin-panel` accepts your e-mail + password. Nobody can become an admin f
 4. Do not "clear all site data" for `<user>.github.io`: all your GitHub Pages sites share that address, so it would also erase the other sites' saved data.
 5. Send the text shown under "تفاصيل الخطأ التقنية" so the cause can be found.
 
-## 📚 Where the novels are served from
-- Each book is looked up in the site's own `books/` folder first, then in the external repository.
-- On every deploy the workflow copies all PDFs of `MrPheonixX/My-Works-PDF-` into the published `books/` folder
-  (change the source with the repository variable `CONTENT_REPO`). PDFs you commit in `public/books/` are kept as they are.
-- GitHub Pages allows at most 1 GB for the whole site. The deploy log prints the size; above ~950 MB it stops.
-- Readers never see a download or "open in new tab" button; the book is drawn inside the page.
+## 📚 The novels (one repository)
+- The PDF files live in **`books-source/`** of this repository. They are never published on the website.
+- On every deploy, GitHub Actions turns each PDF into page images, thumbnails, a cover and text (`scripts/render-books.mjs`)
+  and publishes only those. Results are cached, so only new or changed novels are processed again.
+- **Import the old PDFs once:** Actions → *Import novels from another repository* → Run workflow (default source: `MrPheonixX/My-Works-PDF-`).
+  When it has finished and the site works, you can delete the old repository.
+- **Add / edit / delete novels:** admin page → *الروايات* (needs a GitHub token for this repository; see the page). Or by hand:
+  put the PDF in `books-source/`, and add its details to `client/data/catalog.json`.
+- Your own cover: `books-source/covers/<work id>.jpg` (or png / webp). Without it, page 1 is the cover.
+- GitHub Pages allows 1 GB for the whole site. The deploy prints the size and stops above ~950 MB. Optional repository variable
+  `BOOK_PAGE_WIDTH` (for example 800) makes the page images smaller.

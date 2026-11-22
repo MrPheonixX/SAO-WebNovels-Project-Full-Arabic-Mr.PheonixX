@@ -1,5 +1,43 @@
 # CHANGES — full scan, fixes and new features (Nov 2026)
 
+## 0000. Version 4: a new reader, real covers, one repository, an admin that uploads novels
+
+You said: the file still downloads, the player is bad, the Arabic is broken, no covers, features are missing, and everything
+should live in ONE repository with the admin able to upload and edit novels. This version changes the foundation.
+
+**Why files kept downloading and the Arabic looked broken:** the PDF files were being sent to the browser and drawn there.
+Download managers (IDM, as in your screenshot) catch every PDF request, and the PDF drawing library rendered Arabic fonts badly.
+Now the PDFs are **never sent to the browser**. When the site is built, every novel is turned into page images
+(poppler draws them exactly as the PDF looks, with the PDF's own Arabic fonts), so there is nothing to download and
+the text looks like the original.
+
+| Your request | What was done |
+|--------------|---------------|
+| Reader only inside the site, never a download | The site publishes only page images, thumbnails, covers and text. A build check fails the deploy if any PDF would end up in the site. The IDM dialog cannot appear because no PDF is requested. |
+| The player is bad, it should have every mode and feature | New reader with **4 modes**: scroll, slides, **3D book** (two-page spreads with a turning page; Arabic books open from the right), and **text mode**. Plus: day / paper / night themes, brightness, zoom, page thumbnails, bookmarks, resume where you stopped (synced with your account), page slider and jump, auto-scroll, keyboard (← → + − B T S M F), swipe and tap on phones, fullscreen, right-to-left or left-to-right page order. |
+| Arabic font formatting | Text mode shows the book as reflowable text with your choice of Arabic font (Naskh, Amiri, Scheherazade, Cairo, Tajawal), size, line spacing and width, and **read aloud** in Arabic (browser voice). It needs the PDF to contain real text; scanned books fall back to the image modes. |
+| Covers/thumbnails are missing | Every novel gets a cover (your own upload, or its first page) and a thumbnail for every page. Covers appear on the home page, the libraries, the series pages and the details page. |
+| Delete the PDF repository; everything in one repo | PDFs live in `books-source/` of this repository. A one-click workflow **"Import novels from another repository"** copies all PDFs from `My-Works-PDF-` into it; after that you can delete the old repository. |
+| Admin can upload, edit and add novels | New **"الروايات"** tab in the admin page: add a novel (details + PDF + optional cover), edit its details or replace its PDF, delete it, and watch the deploy status. It saves into this repository (the PDF into `books-source/`, the details into `client/data/catalog.json`) through the GitHub API with a token you create once, and the site rebuilds itself. |
+
+**Also in this version**
+- Paper page-turn sound (slides and book; switch in the reader settings), a "continue reading" row on the home page, and the profile/history remember the page.
+- The demo-only category pages (light novels, classics, side works, anime, all works) that showed made-up works were replaced by pages built from the real catalog; the anime section shows an honest "nothing added yet" page.
+
+**What you do now**
+1. GitHub → Actions → **"Import novels from another repository"** → Run workflow (copies the PDFs into `books-source/`).
+2. The deploy then runs by itself. The first run renders all pages (it can take a long time for many books; later runs only process new or changed novels).
+3. For the admin page: create a fine-grained GitHub token for this repository only (Contents: Read and write, Actions: Read and write) and paste it in Admin → الروايات → "الاتصال بالمستودع".
+
+**Limits to know**
+- GitHub Pages publishes at most 1 GB. The build chooses the page-image width so the whole library fits (about 40 KB per page); a build check stops the deploy with a clear message if it would not.
+- The repository is public, so the PDF files in `books-source/` can still be opened by anyone who browses the repository on github.com. The website itself never offers them. A private repository would hide them, but GitHub Pages on a private repository needs a paid GitHub plan.
+- The 3D page turn and reader were tested in a real browser (desktop and phone). Rendering your real PDFs happens for the first time in GitHub Actions; if one novel fails to render it is skipped with a warning and shows "coming soon".
+- Text mode quality depends on how each PDF was made (Word PDFs usually extract well).
+- The GitHub token you paste in the admin page is kept in that browser only. Use a token limited to this repository, and remove it from the browser on shared computers.
+
+---
+
 ## 000. Hotfix 3: reading only inside the site, novels inside the site, stable login
 
 | Request | What was done |
