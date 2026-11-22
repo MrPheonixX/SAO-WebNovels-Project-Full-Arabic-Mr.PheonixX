@@ -1,0 +1,51 @@
+name: Import novels from another repository
+
+# One-time helper: copies every PDF of the old content repository into this repository
+# (books-source/), so everything lives in ONE repository. Run it from the Actions tab
+# ("Run workflow"). After it finishes you can delete the old repository.
+on:
+  workflow_dispatch:
+    inputs:
+      source_repo:
+        description: "owner/repository that holds the PDF files"
+        default: "MrPheonixX/My-Works-PDF-"
+        required: true
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Copy the PDF files
+        env:
+          SOURCE_REPO: ${{ inputs.source_repo }}
+        run: |
+          git clone --depth 1 "https://github.com/${SOURCE_REPO}.git" /tmp/source
+          mkdir -p books-source
+          find /tmp/source -type f -iname '*.pdf' -not -path '*/.git/*' -print0 | xargs -0 -I{} cp --update=none "{}" books-source/
+          echo "books-source now has $(ls books-source/*.pdf 2>/dev/null | wc -l) PDF file(s), $(du -sm books-source | cut -f1) MB"
+          if grep -l -s "^version https://git-lfs" books-source/*.pdf | head -1 | grep -q .; then
+            echo "::error::some files are Git LFS pointers, not real PDFs; the old repository stores them with Git LFS"; exit 1
+          fi
+
+      - name: Commit and push
+        env:
+          SOURCE_REPO: ${{ inputs.source_repo }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add books-source
+          if git diff --cached --quiet; then echo "nothing new to import"; exit 0; fi
+          git commit -m "Import novel files from ${SOURCE_REPO}"
+          git push
+
+      # A push made with the built-in token does not start other workflows, so start the deploy here.
+      - name: Start the site deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref "${GITHUB_REF_NAME}"

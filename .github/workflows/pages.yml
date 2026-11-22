@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v7
 
@@ -32,6 +33,27 @@ jobs:
       # (such a mistake builds fine but crashes the page when it opens).
       - name: Check for undefined names
         run: node scripts/check-names.mjs
+
+      # --- The novels --------------------------------------------------------
+      # books-source/*.pdf are turned into page images, thumbnails, covers and text.
+      # The PDF files themselves are never published: readers can only read inside the site.
+      - name: Install the PDF tools and Arabic fonts
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends poppler-utils fonts-noto-core fonts-liberation2 fonts-dejavu-core
+
+      # Rendered books are cached: only new or changed novels are processed again.
+      - name: Restore the rendered novels
+        uses: actions/cache@v4
+        with:
+          path: books-rendered
+          key: books-${{ hashFiles('books-source/**', 'scripts/render-books.mjs') }}
+          restore-keys: books-
+
+      - name: Render the novels (pages, thumbnails, covers, text)
+        env:
+          BOOK_PAGE_WIDTH: ${{ vars.BOOK_PAGE_WIDTH }}
+        run: node scripts/render-books.mjs --in books-source --out books-rendered
 
       # https://<user>.github.io/<repo>/  ->  base "/<repo>/"
       # https://<user>.github.io/ (repo named <user>.github.io)  ->  base "/"
@@ -55,33 +77,18 @@ jobs:
           # Set the repository variable ADSENSE_CLIENT (Settings > Variables) to enable ads
           VITE_ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
 
-      # The novels live inside the site itself (books/ folder), so readers never
-      # leave the website. Files committed in public/books/ are kept; every other
-      # PDF of the content repository is copied in.
-      - name: Add the novel files to the site
-        env:
-          CONTENT_REPO: ${{ vars.CONTENT_REPO || 'MrPheonixX/My-Works-PDF-' }}
-        run: |
-          mkdir -p books-staging
-          if git clone --depth 1 "https://github.com/${CONTENT_REPO}.git" content-repo; then
-            find content-repo -type f -iname '*.pdf' -not -path '*/.git/*' -print0 | xargs -0 -I{} cp --update=none "{}" books-staging/
-          else
-            echo "::warning::could not clone ${CONTENT_REPO}: only the books committed in public/books/ will be inside the site"
-          fi
-          ls books-staging | wc -l
-
       - name: Prepare the Pages artifact
         env:
           PAGES_BASE: ${{ steps.base.outputs.path }}
         run: |
           rm -rf pages-out
           cp -r dist/spa pages-out
+          # the processed novels (images, covers, text) live inside the site
+          mkdir -p pages-out/books
+          cp -r books-rendered/. pages-out/books/
           # Pages has no SPA fallback: unknown paths get 404.html, which is the app itself.
           cp pages-out/index.html pages-out/404.html
           touch pages-out/.nojekyll
-          mkdir -p pages-out/books
-          cp --update=none books-staging/*.pdf pages-out/books/ 2>/dev/null || true
-          node scripts/check-books.mjs pages-out
 
           # Guards: fail loudly instead of publishing a broken site.
           if grep -q '/client/App.tsx' pages-out/index.html; then
@@ -96,6 +103,7 @@ jobs:
           if grep -R -q --exclude-dir=books 'service_role' pages-out 2>/dev/null; then
             echo "::error::a service_role key must never be shipped to the browser"; exit 1
           fi
+          node scripts/check-books.mjs pages-out
 
       - uses: actions/upload-pages-artifact@v5
         with:
