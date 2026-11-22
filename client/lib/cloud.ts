@@ -28,8 +28,8 @@ interface CloudSession {
 }
 export type WorkStatus = "published" | "draft" | "hidden";
 export type CloudResult<T = undefined> =
-  | { ok: true; data: T }
-  | { ok: false; error: string; status?: number };
+  | { ok: true; data: T; error?: undefined; status?: undefined }
+  | { ok: false; error: string; status?: number; data?: undefined };
 
 const ok = <T>(data: T): CloudResult<T> => ({ ok: true, data });
 const fail = (error: string, status?: number): CloudResult<never> => ({
@@ -471,8 +471,16 @@ export async function deleteReview(reviewId: string): Promise<CloudResult> {
 }
 
 // ---------- reading history (local first, synced when logged in) ----------
+export interface BookmarkEntry {
+  page: number;
+  at: string;
+}
+
 export interface ReadingProgress {
-  works: Record<string, { lastOpened: string; opens: number }>;
+  works: Record<
+    string,
+    { lastOpened: string; opens: number; page?: number; bookmarks?: BookmarkEntry[] }
+  >;
   updatedAt: string;
 }
 
@@ -492,7 +500,7 @@ export function noteWorkOpened(workId: string): void {
   const progress = readLocalProgress();
   const prev = progress.works[workId];
   const now = new Date().toISOString();
-  progress.works[workId] = { lastOpened: now, opens: (prev?.opens ?? 0) + 1 };
+  progress.works[workId] = { ...prev, lastOpened: now, opens: (prev?.opens ?? 0) + 1 };
   progress.updatedAt = now;
   try {
     localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
@@ -502,6 +510,41 @@ export function noteWorkOpened(workId: string): void {
   if (!cloudEnabled || !getSessionUser()) return;
   clearTimeout(pushTimer);
   pushTimer = setTimeout(() => void pushProgress(), 2500);
+}
+
+function writeProgress(progress: ReadingProgress): void {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch {
+    /* storage unavailable */
+  }
+  if (!cloudEnabled || !getSessionUser()) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => void pushProgress(), 2500);
+}
+
+/** Where the reader stopped in a book, and the pages they bookmarked. */
+export function getBookState(workId: string): { page: number; bookmarks: BookmarkEntry[] } {
+  const w = readLocalProgress().works[workId];
+  return { page: w?.page && w.page > 0 ? w.page : 1, bookmarks: Array.isArray(w?.bookmarks) ? w!.bookmarks! : [] };
+}
+
+export function saveBookPage(workId: string, page: number): void {
+  const progress = readLocalProgress();
+  const now = new Date().toISOString();
+  const prev = progress.works[workId] ?? { lastOpened: now, opens: 1 };
+  progress.works[workId] = { ...prev, page };
+  progress.updatedAt = now;
+  writeProgress(progress);
+}
+
+export function saveBookmarks(workId: string, bookmarks: BookmarkEntry[]): void {
+  const progress = readLocalProgress();
+  const now = new Date().toISOString();
+  const prev = progress.works[workId] ?? { lastOpened: now, opens: 1 };
+  progress.works[workId] = { ...prev, bookmarks };
+  progress.updatedAt = now;
+  writeProgress(progress);
 }
 
 async function pushProgress(): Promise<void> {

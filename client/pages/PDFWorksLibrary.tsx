@@ -28,7 +28,8 @@ import {
 } from "@/data/pdfWorks";
 import { getWorkStatus, useWorkStatuses } from "@/lib/workStatus";
 import AuthButton from "@/components/AuthButton";
-import PDFCover from "@/components/PDFCover";
+import WorkCover from "@/components/WorkCover";
+import { isBookReadable, useBooksIndex } from "@/lib/books";
 
 const PDFWorksLibrary: React.FC = () => {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const PDFWorksLibrary: React.FC = () => {
   const itemsPerPage = 12;
   // re-render when the admin hides/unhides a work
   const statusVersion = useWorkStatuses();
+  useBooksIndex(); // re-render when the processed-books list loads
 
   // Initialize filters from URL (?series=...&arc=...)
   useEffect(() => {
@@ -126,11 +128,7 @@ const PDFWorksLibrary: React.FC = () => {
         className={`h-2 bg-gradient-to-r ${work.coverColor || getSeriesColor(work.series)} rounded-t-lg`}
       />
       <div className="px-4 pt-4">
-        <PDFCover
-          pdfUrl={work.pdfUrlRaw}
-          fallbackGradient={work.coverColor || getSeriesColor(work.series)}
-          backgroundImage={work.backgroundImage}
-        />
+        <WorkCover work={work} className="w-full max-w-[190px] mx-auto" />
       </div>
       <CardHeader className="pb-3 pt-2">
         <div className="flex items-start justify-between">
@@ -148,6 +146,11 @@ const PDFWorksLibrary: React.FC = () => {
           >
             {work.rating}
           </Badge>
+          {isBookReadable(work.id) === false && (
+            <Badge variant="outline" className="text-xs border-yellow-500/40 text-yellow-400">
+              قريباً
+            </Badge>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-1 mt-2">

@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
+  getBookState,
+  readLocalProgress,
+  saveBookPage,
+  saveBookmarks,
   adminSetUserStatus,
   deleteReview,
   fetchReviews,
@@ -343,5 +347,24 @@ describe("session stability (no surprise logouts)", () => {
     localStorage.setItem("sao-cloud-session", JSON.stringify({ access_token: "STALE", refresh_token: "R1", expires_at: Math.floor(Date.now() / 1000) + 3600, user: { id: "u1", email: "me@x.com", name: "K" } }));
     expect((await adminWorkViews()).ok).toBe(true);
     expect(calls.filter((c) => c.url.includes("grant_type=refresh_token")).length).toBe(1);
+  });
+});
+
+describe("book position and bookmarks", () => {
+  it("remembers the page and the bookmarks without losing the open count", () => {
+    install(() => ({ json: [] }));
+    noteWorkOpened("b1");
+    saveBookPage("b1", 42);
+    saveBookmarks("b1", [{ page: 7, at: "t" }]);
+    noteWorkOpened("b1");
+    const state = getBookState("b1");
+    expect(state.page).toBe(42);
+    expect(state.bookmarks).toEqual([{ page: 7, at: "t" }]);
+    expect(readLocalProgress().works["b1"].opens).toBe(2);
+  });
+  it("starts at page 1 for a new book", () => {
+    install(() => ({ json: [] }));
+    expect(getBookState("new").page).toBe(1);
+    expect(getBookState("new").bookmarks).toEqual([]);
   });
 });

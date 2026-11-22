@@ -1,180 +1,141 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AlertCircle, ArrowLeft, BookOpen, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertCircle,
-  BookOpen,
-  Share2,
-  ArrowLeft,
-} from "lucide-react";
-import ProtectedPDFViewer from "@/components/ProtectedPDFViewer";
-import { noteWorkOpened, recordWorkView } from "@/lib/cloud";
-import { getWorkStatus, useWorkStatuses } from "@/lib/workStatus";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Reader from "@/components/reader/Reader";
+import WorkCover from "@/components/WorkCover";
 import WorkReviews from "@/components/WorkReviews";
-import { getWorkById, PDFWork } from "@/data/pdfWorks";
+import { getWorkById } from "@/data/pdfWorks";
+import { getBookInfo, isBookReadable, useBooksIndex } from "@/lib/books";
+import { getBookState, noteWorkOpened, readLocalProgress, recordWorkView } from "@/lib/cloud";
+import { getWorkStatus, useWorkStatuses } from "@/lib/workStatus";
+
+const Message: React.FC<{ title: string; text: string; onBack: () => void; busy?: boolean }> = ({ title, text, onBack, busy }) => (
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
+    <Card className="w-full max-w-md bg-black/40 backdrop-blur-xl border border-cyan-500/30">
+      <CardContent className="p-8 text-center">
+        {busy ? <div className="animate-spin w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4" /> : <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />}
+        <h2 className="text-xl font-bold text-white mb-2">{title}</h2>
+        <p className="text-gray-300 mb-6">{text}</p>
+        <Button onClick={onBack} variant="outline" className="border-cyan-500/40 text-cyan-300">
+          <ArrowLeft className="w-4 h-4 ml-2" />
+          العودة للمكتبة
+        </Button>
+      </CardContent>
+    </Card>
+  </div>
+);
 
 const PDFReader: React.FC = () => {
   const { workId } = useParams<{ workId: string }>();
   const navigate = useNavigate();
-  const [work, setWork] = useState<PDFWork | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showViewer, setShowViewer] = useState(true);
   const statusVersion = useWorkStatuses();
-  const notedWorkRef = useRef<string | null>(null);
+  useBooksIndex();
+  const [showReader, setShowReader] = useState(true);
+  const [waited, setWaited] = useState(false);
+  const notedRef = useRef<string | null>(null);
 
+  const work = workId ? getWorkById(workId) : undefined;
+  const info = work ? getBookInfo(work.id) : undefined;
+  const readable = work ? isBookReadable(work.id) : null;
+  const visibility = work ? getWorkStatus(work.id) : "published";
+
+  const backToLibrary = () => (window.history.length > 1 ? navigate(-1) : navigate("/pdf-works"));
+
+  // the books list normally arrives in a moment; do not wait for it forever
   useEffect(() => {
-    if (workId) {
-      const foundWork = getWorkById(workId);
-      const visibility = foundWork ? getWorkStatus(foundWork.id) : "published";
-      if (foundWork && visibility !== "published") {
-        setWork(null);
-        setError(
-          visibility === "draft"
-            ? "هذا العمل سيتوفر قريباً"
-            : "هذا العمل غير متاح حالياً",
-        );
-        setIsLoading(false);
-      } else if (foundWork) {
-        setError(null);
-        setWork(foundWork);
-        setIsLoading(false);
-        // statuses can load after the first render: count the visit only once
-        if (notedWorkRef.current !== foundWork.id) {
-          notedWorkRef.current = foundWork.id;
-          noteWorkOpened(foundWork.id);
-          void recordWorkView(foundWork.id);
-        }
-      } else {
-        setError("العمل المطلوب غير موجود");
-        setIsLoading(false);
-      }
-    } else {
-      setError("معرف العمل مطلوب");
-      setIsLoading(false);
-    }
-  }, [workId, statusVersion]);
+    const t = setTimeout(() => setWaited(true), 7000);
+    return () => clearTimeout(t);
+  }, []);
 
-  const handleStartReading = () => {
-    setShowViewer(true);
-  };
+  // count the visit once, when the book can really be read
+  useEffect(() => {
+    if (!work || readable !== true || visibility !== "published") return;
+    if (notedRef.current === work.id) return;
+    notedRef.current = work.id;
+    noteWorkOpened(work.id);
+    void recordWorkView(work.id);
+  }, [work, readable, visibility, statusVersion]);
 
-  const handleBackToInfo = () => {
-    setShowViewer(false);
-  };
-
-  const handleBackToLibrary = () => {
-    navigate("/all-works");
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-        <Card className="w-96 bg-black/40 backdrop-blur-xl border border-cyan-500/30">
-          <CardContent className="p-8 text-center">
-            <BookOpen className="w-16 h-16 mx-auto text-cyan-400 animate-spin mb-4" />
-            <p className="text-white">جاري تحميل معلومات العمل...</p>
-          </CardContent>
-        </Card>
-      </div>
+  if (!work) return <Message title="العمل غير موجود" text="لم نجد هذا العمل في المكتبة." onBack={backToLibrary} />;
+  if (visibility === "draft") return <Message title="قريباً" text="هذا العمل سيتوفر قريباً." onBack={backToLibrary} />;
+  if (visibility === "hidden") return <Message title="غير متاح" text="هذا العمل غير متاح حالياً." onBack={backToLibrary} />;
+  if (readable === null) {
+    return waited ? (
+      <Message title="تعذر تحميل الكتب" text="تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة." onBack={backToLibrary} />
+    ) : (
+      <Message title="جاري التحضير…" text="نجهّز الكتاب للقراءة." onBack={backToLibrary} busy />
     );
   }
-
-  if (error || !work) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-        <Card className="w-96 bg-black/40 backdrop-blur-xl border border-red-500/30">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
-            <h3 className="text-xl font-bold text-white mb-4">
-              خطأ في التحميل
-            </h3>
-            <p className="text-red-400 mb-6">{error}</p>
-            <Button
-              onClick={handleBackToLibrary}
-              className="bg-cyan-600 hover:bg-cyan-700"
-            >
-              <ArrowLeft className="w-4 h-4 ml-2" />
-              العودة للمكتبة
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (readable === false || !info) {
+    return <Message title="قريباً" text="لم يُرفع ملف هذا العمل بعد. سيظهر هنا فور إضافته." onBack={backToLibrary} />;
   }
 
-  if (showViewer) {
+  if (showReader) {
     return (
-      <ProtectedPDFViewer
-        pdfUrl={work.pdfUrlRaw}
-        title={work.titleEn}
-        titleAr={work.titleAr}
-        series={work.series}
-        volumeNumber={work.volumeNumber}
-        onBack={handleBackToLibrary}
-        onShowInfo={handleBackToInfo}
+      <Reader
+        id={work.id}
+        title={work.titleAr}
+        subtitle={[work.series, work.volumeNumber ? `المجلد ${work.volumeNumber}` : ""].filter(Boolean).join(" · ")}
+        info={info}
+        onClose={backToLibrary}
+        onShowInfo={() => setShowReader(false)}
       />
     );
   }
 
+  const state = getBookState(work.id);
+  const last = readLocalProgress().works[work.id]?.lastOpened;
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: work.titleAr, url });
+      else await navigator.clipboard.writeText(url);
+    } catch {
+      /* cancelled */
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={handleBackToLibrary}
-            className="text-white hover:text-cyan-400 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 ml-2" />
-            العودة للمكتبة
-          </Button>
-        </div>
+        <Button variant="ghost" onClick={backToLibrary} className="text-white hover:text-cyan-400 mb-4">
+          <ArrowLeft className="w-4 h-4 ml-2" />
+          العودة للمكتبة
+        </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* معلومات العمل */}
           <div className="lg:col-span-2">
             <Card className="bg-black/40 backdrop-blur-xl border border-cyan-500/30">
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl font-bold text-white mb-2">
-                      {work.titleAr}
-                    </CardTitle>
-                    <p className="text-gray-400 text-lg mb-4">{work.titleEn}</p>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge
-                        variant="secondary"
-                        className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
-                      >
+                <div className="flex gap-5 items-start">
+                  <WorkCover work={work} className="w-32 sm:w-40 shrink-0" rounded="rounded-lg" />
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-2xl font-bold text-white mb-2">{work.titleAr}</CardTitle>
+                    <p className="text-gray-400 text-lg mb-4" dir="ltr">
+                      {work.titleEn}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
                         {work.series}
                       </Badge>
                       {work.volumeNumber && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-purple-500/20 text-purple-400 border-purple-500/30"
-                        >
+                        <Badge variant="secondary" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
                           المجلد {work.volumeNumber}
                         </Badge>
                       )}
                       {work.arc && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-green-500/20 text-green-400 border-green-500/30"
-                        >
+                        <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
                           {work.arc}
                         </Badge>
                       )}
-                      <Badge
-                        variant="secondary"
-                        className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                      >
-                        {work.rating}/10
-                      </Badge>
+                      {work.rating !== undefined && (
+                        <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                          {work.rating}/10
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -183,58 +144,36 @@ const PDFReader: React.FC = () => {
               <CardContent>
                 {work.description && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-3">
-                      وصف العمل
-                    </h3>
-                    <p className="text-gray-300 leading-relaxed">
-                      {work.description}
-                    </p>
+                    <h3 className="text-lg font-semibold text-white mb-3">وصف العمل</h3>
+                    <p className="text-gray-300 leading-relaxed">{work.description}</p>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
                     <p className="text-gray-400 text-sm">سنة النشر</p>
-                    <p className="text-white font-semibold">
-                      {work.publishYear || "غير محدد"}
-                    </p>
+                    <p className="text-white font-semibold">{work.publishYear || "غير محدد"}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">عدد الصفحات</p>
-                    <p className="text-white font-semibold">
-                      {work.pages || "غير محدد"} صفحة
-                    </p>
+                    <p className="text-white font-semibold">{info.pages} صفحة</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">الحالة</p>
-                    <p className="text-white font-semibold">
-                      {work.status === "available"
-                        ? "متاح للقراءة"
-                        : work.status === "reading"
-                          ? "قيد القراءة"
-                          : "قريباً"}
-                    </p>
+                    <p className="text-white font-semibold">متاح للقراءة</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">التقدم</p>
-                    <p className="text-white font-semibold">
-                      {work.readProgress || 0}%
-                    </p>
+                    <p className="text-white font-semibold">{Math.round((Math.min(state.page, info.pages) / info.pages) * 100)}%</p>
                   </div>
                 </div>
 
                 {work.tags && work.tags.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-3">
-                      التصنيفات
-                    </h3>
+                    <h3 className="text-lg font-semibold text-white mb-3">التصنيفات</h3>
                     <div className="flex flex-wrap gap-2">
-                      {work.tags.map((tag, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="border-gray-500/30 text-gray-300 hover:border-cyan-500/50 hover:text-cyan-400"
-                        >
+                      {work.tags.map((tag) => (
+                        <Badge key={tag} variant="outline" className="border-gray-500/30 text-gray-300">
                           {tag}
                         </Badge>
                       ))}
@@ -242,20 +181,12 @@ const PDFReader: React.FC = () => {
                   </div>
                 )}
 
-                {/* أزرار التحكم */}
                 <div className="flex flex-wrap gap-3">
-                  <Button
-                    onClick={handleStartReading}
-                    className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
-                  >
+                  <Button onClick={() => setShowReader(true)} className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white">
                     <BookOpen className="w-4 h-4 ml-2" />
-                    بدء القراءة
+                    {state.page > 1 ? `متابعة القراءة (صفحة ${state.page})` : "بدء القراءة"}
                   </Button>
-
-                  <Button
-                    variant="outline"
-                    className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
-                  >
+                  <Button variant="outline" onClick={share} className="border-gray-500/30 text-gray-300 hover:bg-gray-500/10">
                     <Share2 className="w-4 h-4 ml-2" />
                     مشاركة
                   </Button>
@@ -264,71 +195,45 @@ const PDFReader: React.FC = () => {
             </Card>
           </div>
 
-          {/* معلومات إضافية */}
           <div className="space-y-6">
-            {/* إحصائيات القراءة */}
             <Card className="bg-black/40 backdrop-blur-xl border border-cyan-500/30">
               <CardHeader>
-                <CardTitle className="text-lg text-white">
-                  إحصائيات القراءة
-                </CardTitle>
+                <CardTitle className="text-lg text-white">إحصائيات القراءة</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-gray-400">الصفحة الحالية</span>
-                    <span className="text-white font-semibold">1</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">وقت القراءة المقدر</span>
-                    <span className="text-white font-semibold">
-                      {work.pages ? Math.round(work.pages / 2) : 0} دقيقة
-                    </span>
+                    <span className="text-white font-semibold">{state.page}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">آخر قراءة</span>
-                    <span className="text-white font-semibold">
-                      {work.lastRead || "لم تبدأ بعد"}
-                    </span>
+                    <span className="text-white font-semibold">{last ? new Date(last).toLocaleDateString("ar-EG-u-nu-latn") : "لم تبدأ بعد"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">الإشارات</span>
+                    <span className="text-white font-semibold">{state.bookmarks.length}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* تحذير أمني */}
             <Card className="bg-red-900/20 border border-red-500/30">
-              <CardHeader>
-                <CardTitle className="text-lg text-red-400 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5" />
-                  تنبيه
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm text-red-300">
-                  <p>📖 القراءة داخل الموقع فقط</p>
-                  <p>📜 المحتوى محمي بحقوق الطبع والنشر</p>
-                </div>
+              <CardContent className="p-5 space-y-2 text-sm text-red-300">
+                <p>📖 القراءة داخل الموقع فقط</p>
+                <p>📜 المحتوى محمي بحقوق الطبع والنشر</p>
               </CardContent>
             </Card>
 
             <WorkReviews workId={work.id} />
 
-            {/* معلومات المترجم */}
             <Card className="bg-black/40 backdrop-blur-xl border border-purple-500/30">
               <CardHeader>
-                <CardTitle className="text-lg text-purple-400">
-                  معلومات الترجمة
-                </CardTitle>
+                <CardTitle className="text-lg text-purple-400">معلومات الترجمة</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
-                  <p className="text-gray-400">المترجم:</p>
-                  <p className="text-white font-semibold">MrPheonixX Team</p>
-                  <p className="text-gray-400">جودة الترجمة:</p>
-                  <p className="text-white font-semibold">عالية الجودة</p>
-                  <p className="text-gray-400">حالة الترجمة:</p>
-                  <p className="text-green-400 font-semibold">مكتملة ✅</p>
-                </div>
+                <p className="text-gray-400 text-sm">المترجم</p>
+                <p className="text-white font-semibold">MrPheonixX Team</p>
               </CardContent>
             </Card>
           </div>

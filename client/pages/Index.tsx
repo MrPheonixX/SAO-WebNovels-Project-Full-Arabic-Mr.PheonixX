@@ -1,5 +1,6 @@
 import { pdfWorks } from "@/data/pdfWorks";
 import AuthButton from "@/components/AuthButton";
+import ContinueReading from "@/components/ContinueReading";
 import { seriesVolumes } from "@/lib/catalogView";
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,8 +37,7 @@ import {
 } from "@/components/InteractiveElements";
 import AdvancedFeaturesDashboard from "@/components/AdvancedFeaturesDashboard";
 import { getWorksBySeries, getWorkById } from "@/data/pdfWorks";
-import { usePdfCover } from "@/hooks/usePdfCover";
-import { useSeriesCover } from "@/hooks/useSeriesCover";
+import { coverUrl, getBookInfo, useBooksIndex } from "@/lib/books";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -97,16 +97,13 @@ export default function Index() {
   const welcomeWork = getWorkById("welcome-to-nhk");
   const humanWork = getWorkById("no-longer-human-dazai");
 
-  const { cover: saoCover } = useSeriesCover("Sword Art Online");
-  const { cover: progCover } = useSeriesCover("Sword Art Online Progressive");
-  const { cover: welcomeCover } = usePdfCover(
-    welcomeWork?.pdfUrlRaw,
-    welcomeWork?.backgroundImage || undefined,
-  );
-  const { cover: humanCover } = usePdfCover(
-    humanWork?.pdfUrlRaw,
-    humanWork?.backgroundImage || undefined,
-  );
+  // Covers are generated from the novels at deploy time (first page or the admin's cover)
+  useBooksIndex();
+  const coverOf = (id?: string) => (id && getBookInfo(id)?.cover ? coverUrl(id) : undefined);
+  const saoCover = coverOf(saoFirst?.id);
+  const progCover = coverOf(getWorksBySeries("Sword Art Online Progressive")[0]?.id);
+  const welcomeCover = coverOf(welcomeWork?.id);
+  const humanCover = coverOf(humanWork?.id);
 
   const changeTheme = (theme: string) => {
     setCurrentTheme(theme);
@@ -395,6 +392,8 @@ export default function Index() {
             </div>
           </div>
         </section>
+
+        <ContinueReading />
 
         {/* Main Series Section */}
         <section className="grid md:grid-cols-2 gap-12 mb-20 max-w-6xl mx-auto">

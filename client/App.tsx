@@ -11,6 +11,7 @@ import { lazyRetry } from "./lib/lazyRetry";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SecurityProvider from "./components/SecurityProvider";
 import { loadWorkStatuses } from "./lib/workStatus";
+import { loadBooksIndex } from "./lib/books";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,8 @@ const queryClient = new QueryClient();
 
 // Which works the admin has hidden / marked as coming soon (never throws)
 void loadWorkStatuses();
+// Which novels are processed and readable (written at deploy time)
+void loadBooksIndex();
 
 const App = () => (
   <ErrorBoundary>

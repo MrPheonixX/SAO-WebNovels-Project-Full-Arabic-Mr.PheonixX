@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import NovelsManager from "@/components/NovelsManager";
 import { pdfWorks } from "@/data/pdfWorks";
 import {
   getWorkStatus,
@@ -436,6 +437,7 @@ export default function AdminDashboard() {
           <div className="flex space-x-2 bg-black/30 p-2 rounded-lg">
             {[
               { id: "overview", label: "نظرة عامة", icon: BarChart3 },
+              { id: "novels", label: "الروايات", icon: Upload },
               { id: "volumes", label: "إدارة المجلدات", icon: BookOpen },
               { id: "users", label: "إدارة المستخدمين", icon: Users },
               { id: "analytics", label: "التحليلات", icon: Activity },
@@ -544,13 +546,15 @@ export default function AdminDashboard() {
         )}
 
         {/* Volumes Management Tab */}
+        {activeTab === "novels" && <NovelsManager />}
+
         {activeTab === "volumes" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-purple-400">
                 إدارة المجلدات
               </h2>
-              <Button className="bg-gradient-to-r from-green-600 to-blue-600">
+              <Button className="bg-gradient-to-r from-green-600 to-blue-600" onClick={() => setActiveTab("novels")}>
                 <Plus className="w-4 h-4 mr-2" />
                 رفع مجلد جديد
               </Button>

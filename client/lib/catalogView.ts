@@ -6,9 +6,10 @@ export type LibraryFilter = "all" | "unread" | "opened";
 export type LibrarySort = "order" | "rating" | "pages";
 
 /** All works of one series, in reading order (volumes first, extras last). */
-export function seriesVolumes(series: string): PDFWork[] {
+export function seriesVolumes(series: string | string[]): PDFWork[] {
+  const names = Array.isArray(series) ? series : [series];
   return pdfWorks
-    .filter((w) => w.series === series)
+    .filter((w) => names.includes(w.series))
     .map((w, index) => ({ w, index }))
     .sort((a, b) => {
       const av = a.w.volumeNumber ?? Number.MAX_SAFE_INTEGER;
